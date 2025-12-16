@@ -1,5 +1,7 @@
-from os import environ
 from FlaskWebProject import app
 
-# DO NOT call app.run() in production
-# Azure + Gunicorn will handle startup
+# Azure App Service looks for "app" object
+application = app
+
+if __name__ == "__main__":
+    application.run()
