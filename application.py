@@ -1,7 +1,5 @@
+from os import environ
 from FlaskWebProject import app
 
-# Azure App Service looks for "app" object
-application = app
-
 if __name__ == "__main__":
-    application.run()
+    app.run(host="0.0.0.0", port=int(environ.get("PORT", 8000)))
