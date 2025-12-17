@@ -1,6 +1,7 @@
 """
 Routes and views for the flask application.
 """
+import msal
 
 from datetime import datetime
 from flask import render_template, flash, redirect, request, session, url_for
