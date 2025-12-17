@@ -7,13 +7,15 @@ import string, random
 from werkzeug.utils import secure_filename
 from flask import flash
 
-# Blob config
+# ===============================
+# Azure Blob Setup (NEW SDK)
+# ===============================
 blob_container = app.config.get('BLOB_CONTAINER')
-blob_connection_string = app.config.get('BLOB_CONNECTION_STRING')
 
 blob_service_client = BlobServiceClient.from_connection_string(
-    blob_connection_string
+    app.config.get('BLOB_CONNECTION_STRING')
 )
+
 container_client = blob_service_client.get_container_client(blob_container)
 
 
@@ -57,21 +59,22 @@ class Post(db.Model):
 
         if file:
             filename = secure_filename(file.filename)
-            ext = filename.rsplit('.', 1)[1]
-            new_name = f"{id_generator()}.{ext}"
+            extension = filename.rsplit('.', 1)[1]
+            filename = f"{id_generator()}.{extension}"
 
             try:
-                blob_client = container_client.get_blob_client(new_name)
+                blob_client = container_client.get_blob_client(filename)
                 blob_client.upload_blob(file, overwrite=True)
 
                 if self.image_path:
-                    old_blob = container_client.get_blob_client(self.image_path)
-                    old_blob.delete_blob()
+                    container_client.delete_blob(self.image_path)
 
-                self.image_path = new_name
+                self.image_path = filename
+
             except Exception as e:
                 flash(str(e))
 
         if new:
             db.session.add(self)
+
         db.session.commit()
