@@ -1,3 +1,4 @@
+
 from datetime import datetime
 from FlaskWebProject import app, db, login
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -6,21 +7,20 @@ from azure.storage.blob import BlobServiceClient
 import string, random
 from werkzeug.utils import secure_filename
 from flask import flash
+import os
 
 # ===============================
-# Azure Blob Setup
+# Azure Blob Setup (SAFE)
 # ===============================
-blob_container = app.config.get("BLOB_CONTAINER")
-connection_string = app.config.get("BLOB_CONNECTION_STRING")
+blob_container = app.config.get('BLOB_CONTAINER')
+blob_conn_str = app.config.get('BLOB_CONNECTION_STRING')
 
-if not connection_string or not blob_container:
-    raise RuntimeError("Azure Blob Storage is not configured properly")
+blob_service_client = None
+container_client = None
 
-blob_service_client = BlobServiceClient.from_connection_string(
-    connection_string
-)
-
-container_client = blob_service_client.get_container_client(blob_container)
+if blob_container and blob_conn_str:
+    blob_service_client = BlobServiceClient.from_connection_string(blob_conn_str)
+    container_client = blob_service_client.get_container_client(blob_container)
 
 
 def id_generator(size=32, chars=string.ascii_uppercase + string.digits):
