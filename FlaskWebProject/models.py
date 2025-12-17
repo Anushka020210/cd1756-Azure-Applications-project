@@ -2,19 +2,20 @@ from datetime import datetime
 from FlaskWebProject import app, db, login
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from azure.storage.blob import BlobServiceClient
+import string, random
 from werkzeug.utils import secure_filename
 from flask import flash
-import string, random
-
-# ✅ NEW Azure Blob SDK
-from azure.storage.blob import BlobServiceClient
 
 # Blob config
-blob_container = app.config['BLOB_CONTAINER']
+blob_container = app.config.get('BLOB_CONTAINER')
+blob_connection_string = app.config.get('BLOB_CONNECTION_STRING')
+
 blob_service_client = BlobServiceClient.from_connection_string(
-    app.config['BLOB_CONNECTION_STRING']
+    blob_connection_string
 )
 container_client = blob_service_client.get_container_client(blob_container)
+
 
 def id_generator(size=32, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
@@ -57,20 +58,20 @@ class Post(db.Model):
         if file:
             filename = secure_filename(file.filename)
             ext = filename.rsplit('.', 1)[1]
-            filename = f"{id_generator()}.{ext}"
+            new_name = f"{id_generator()}.{ext}"
 
             try:
-                blob_client = container_client.get_blob_client(filename)
+                blob_client = container_client.get_blob_client(new_name)
                 blob_client.upload_blob(file, overwrite=True)
 
                 if self.image_path:
-                    container_client.delete_blob(self.image_path)
+                    old_blob = container_client.get_blob_client(self.image_path)
+                    old_blob.delete_blob()
 
-                self.image_path = filename
+                self.image_path = new_name
             except Exception as e:
                 flash(str(e))
 
         if new:
             db.session.add(self)
-
         db.session.commit()
