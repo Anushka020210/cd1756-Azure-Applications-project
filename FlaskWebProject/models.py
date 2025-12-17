@@ -8,12 +8,16 @@ from werkzeug.utils import secure_filename
 from flask import flash
 
 # ===============================
-# Azure Blob Setup (NEW SDK)
+# Azure Blob Setup
 # ===============================
-blob_container = app.config.get('BLOB_CONTAINER')
+blob_container = app.config.get("BLOB_CONTAINER")
+connection_string = app.config.get("BLOB_CONNECTION_STRING")
+
+if not connection_string or not blob_container:
+    raise RuntimeError("Azure Blob Storage is not configured properly")
 
 blob_service_client = BlobServiceClient.from_connection_string(
-    app.config.get('BLOB_CONNECTION_STRING')
+    connection_string
 )
 
 container_client = blob_service_client.get_container_client(blob_container)
