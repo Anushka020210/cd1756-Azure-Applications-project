@@ -1,4 +1,5 @@
 import os
+import urllib.parse
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -24,19 +25,16 @@ class Config(object):
     SQL_USER_NAME = os.environ.get("SQL_USER_NAME")
     SQL_PASSWORD = os.environ.get("SQL_PASSWORD")
 
-    SQLALCHEMY_DATABASE_URI = (
-        "mssql+pyodbc://"
-        + SQL_USER_NAME
-        + "@"
-        + SQL_SERVER
-        + ":"
-        + SQL_PASSWORD
-        + "@"
-        + SQL_SERVER
-        + ":1433/"
-        + SQL_DATABASE
-        + "?driver=ODBC+Driver+17+for+SQL+Server"
+    # ---- CORRECT Azure SQL connection string ----
+    params = urllib.parse.quote_plus(
+        "DRIVER={ODBC Driver 17 for SQL Server};"
+        f"SERVER={SQL_SERVER};"
+        f"DATABASE={SQL_DATABASE};"
+        f"UID={SQL_USER_NAME};"
+        f"PWD={SQL_PASSWORD};"
     )
+
+    SQLALCHEMY_DATABASE_URI = f"mssql+pyodbc:///?odbc_connect={params}"
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
@@ -48,7 +46,6 @@ class Config(object):
 
     AUTHORITY = "https://login.microsoftonline.com/common"
     REDIRECT_PATH = "/getAToken"
-
     SCOPE = ["User.Read"]
 
     # -------------------------
