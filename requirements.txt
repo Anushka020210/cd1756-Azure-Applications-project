@@ -16,5 +16,7 @@ gunicorn==23.0.0
 msal==1.28.0
 
 pyodbc==5.0.1
-
 azure-storage-blob==12.19.0
+
+# For debugging and local development
+python-dotenv==1.0.0  # Add this for loading .env files locally
